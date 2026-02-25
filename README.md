@@ -20,6 +20,8 @@ Multi-agent orchestration layer for [OpenAI Codex CLI](https://github.com/openai
 - ✅ [`langfuse-claude-code`](https://github.com/BAEM1N/langfuse-claude-code)
 - ✅ [`langfuse-gemini-cli`](https://github.com/BAEM1N/langfuse-gemini-cli)
 - ✅ [`langfuse-opencode`](https://github.com/BAEM1N/langfuse-opencode)
+- ✅ Final repository cleanup done (no unnecessary tracked files found)
+- ✅ `v0.0.1` release/tag refreshed for Langfuse companion packaging
 - Progress docs: [English](./PROGRESS.md) | [한국어](./PROGRESS.ko.md)
 
 ## Languages
