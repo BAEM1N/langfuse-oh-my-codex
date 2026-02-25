@@ -14,6 +14,14 @@
 
 Multi-agent orchestration layer for [OpenAI Codex CLI](https://github.com/openai/codex).
 
+## Langfuse Companion Repositories (Status: February 25, 2026)
+
+- ✅ [`langfuse-oh-my-codex`](https://github.com/BAEM1N/langfuse-oh-my-codex)
+- ✅ [`langfuse-claude-code`](https://github.com/BAEM1N/langfuse-claude-code)
+- ✅ [`langfuse-gemini-cli`](https://github.com/BAEM1N/langfuse-gemini-cli)
+- ✅ [`langfuse-opencode`](https://github.com/BAEM1N/langfuse-opencode)
+- Progress docs: [English](./PROGRESS.md) | [한국어](./PROGRESS.ko.md)
+
 ## Languages
 
 - [English](./README.md)

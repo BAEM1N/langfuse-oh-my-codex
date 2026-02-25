@@ -4,6 +4,14 @@
 
 OMX는 OpenAI Codex CLI를 위한 멀티 에이전트 오케스트레이션 레이어입니다.
 
+## Langfuse 연동 저장소 상태 (2026년 2월 25일)
+
+- ✅ [`langfuse-oh-my-codex`](https://github.com/BAEM1N/langfuse-oh-my-codex)
+- ✅ [`langfuse-claude-code`](https://github.com/BAEM1N/langfuse-claude-code)
+- ✅ [`langfuse-gemini-cli`](https://github.com/BAEM1N/langfuse-gemini-cli)
+- ✅ [`langfuse-opencode`](https://github.com/BAEM1N/langfuse-opencode)
+- 진행 문서: [English](./PROGRESS.md) | [한국어](./PROGRESS.ko.md)
+
 ## 빠른 시작
 
 ```bash
