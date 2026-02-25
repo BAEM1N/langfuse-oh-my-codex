@@ -21,6 +21,28 @@
 4. Langfuse trace/span/generation/tool observation 전송
 
 ## 환경변수
+
+### 권장: `~/.omx/.env`
+```bash
+mkdir -p ~/.omx
+cat > ~/.omx/.env <<'EOF'
+OMX_HOOK_PLUGINS=1
+OMX_TRACE_TO_LANGFUSE=true
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
+LANGFUSE_BASE_URL=https://cloud.langfuse.com
+LANGFUSE_USER_ID=baem1n
+EOF
+chmod 600 ~/.omx/.env
+```
+
+`langfuse_omx_hook.py`는 실행 시 아래 순서로 `.env`를 자동 로드합니다.
+1. 이미 설정된 프로세스 환경변수(최우선)
+2. `OMX_LANGFUSE_ENV_FILE` (명시 경로)
+3. `~/.omx/.env`
+4. `<cwd>/.omx/.env`
+
+### 또는 shell export 방식
 ```bash
 export OMX_HOOK_PLUGINS=1
 export OMX_TRACE_TO_LANGFUSE=true

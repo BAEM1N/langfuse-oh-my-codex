@@ -142,6 +142,68 @@ def _include_turn_context_spans() -> bool:
     return raw in ("1", "true", "yes", "on")
 
 
+def _load_env_file(path: Path) -> None:
+    if not path.exists():
+        return
+    try:
+        for raw_line in path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[len("export "):].strip()
+            if "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            if not key:
+                continue
+            # Prefer explicit process env over file defaults.
+            if key in os.environ:
+                continue
+
+            value = value.strip()
+            if value:
+                if value[0] in ('"', "'"):
+                    quote = value[0]
+                    if len(value) >= 2 and value.endswith(quote):
+                        value = value[1:-1]
+                    else:
+                        value = value[1:]
+                else:
+                    # allow inline comments for unquoted values
+                    value = value.split(" #", 1)[0].strip()
+            os.environ[key] = value
+    except Exception:
+        pass
+
+
+def _load_env_defaults(cwd: str) -> None:
+    """Best-effort .env loading for hook runtime.
+
+    Precedence:
+    1) existing process environment (highest)
+    2) OMX_LANGFUSE_ENV_FILE (optional explicit path)
+    3) ~/.omx/.env
+    4) <cwd>/.omx/.env
+    """
+    override = _as_str(os.getenv("OMX_LANGFUSE_ENV_FILE")).strip()
+    candidates: List[Path] = []
+    if override:
+        candidates.append(Path(override).expanduser())
+    candidates.append(Path.home() / ".omx" / ".env")
+    if cwd:
+        candidates.append(Path(cwd) / ".omx" / ".env")
+
+    seen: set[str] = set()
+    for candidate in candidates:
+        key = str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        _load_env_file(candidate)
+
+
 # ---------------------------------------------------------------------------
 # Input payload
 # ---------------------------------------------------------------------------
@@ -1278,6 +1340,8 @@ def _emit_lifecycle_event(client: Any, event_data: Dict[str, Any], user_id: str)
 # ---------------------------------------------------------------------------
 
 def main() -> int:
+    _load_env_defaults(os.getcwd())
+
     # safety gate
     if not _env_true("OMX_TRACE_TO_LANGFUSE"):
         return 0
