@@ -184,16 +184,16 @@ def _load_env_defaults(cwd: str) -> None:
     Precedence:
     1) existing process environment (highest)
     2) LANGFUSE_ENV_FILE (optional explicit path)
-    3) ~/.langfuse-hook/.env
+    3) ~/.omx/.env
     4) <cwd>/.langfuse-hook/.env
     """
     override = _as_str(os.getenv("LANGFUSE_ENV_FILE")).strip()
     candidates: List[Path] = []
     if override:
         candidates.append(Path(override).expanduser())
-    candidates.append(Path.home() / ".langfuse-hook" / ".env")
+    candidates.append(Path.home() / ".omx" / ".env")
     if cwd:
-        candidates.append(Path(cwd) / ".langfuse-hook" / ".env")
+        candidates.append(Path(cwd) / ".omx" / ".env")
 
     seen: set[str] = set()
     for candidate in candidates:
@@ -259,7 +259,7 @@ class HookState:
 
 
 def _state_path(cwd: str) -> Path:
-    return Path(cwd) / ".langfuse-hook" / "hooks" / "langfuse_state.json"
+    return Path(cwd) / ".omx" / "hooks" / "langfuse_state.json"
 
 
 def _load_state(cwd: str) -> HookState:
@@ -1343,7 +1343,7 @@ def main() -> int:
     _load_env_defaults(os.getcwd())
 
     # safety gate
-    if not _env_true("LANGFUSE_TRACE_ENABLED"):
+    if not _env_true("TRACE_TO_LANGFUSE"):
         return 0
 
     payload = _read_payload()
