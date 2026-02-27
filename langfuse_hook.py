@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-OMX hook-plugin -> Langfuse bridge (hook-only mode).
+Langfuse tracing hook.
 
 Deep observability in hook-only mode:
 - turn reconstruction from Codex rollout JSONL
@@ -111,14 +111,14 @@ def _include_agent_reasoning() -> bool:
     Default is False because event stream can be very noisy and appear out-of-order
     compared to tool observations in the Langfuse UI.
     """
-    raw = os.getenv("OMX_LANGFUSE_INCLUDE_AGENT_REASONING", "").strip().lower()
+    raw = os.getenv("LANGFUSE_INCLUDE_AGENT_REASONING", "").strip().lower()
     if not raw:
         return False
     return raw in ("1", "true", "yes", "on")
 
 
 def _max_reasoning_blocks() -> int:
-    raw = os.getenv("OMX_LANGFUSE_MAX_REASONING_BLOCKS", "200").strip()
+    raw = os.getenv("LANGFUSE_MAX_REASONING_BLOCKS", "200").strip()
     try:
         n = int(raw)
     except Exception:
@@ -128,7 +128,7 @@ def _max_reasoning_blocks() -> int:
 
 def _reasoning_raw_passthrough() -> bool:
     """When true, keep reasoning blocks as-is (including duplicates/order)."""
-    raw = os.getenv("OMX_LANGFUSE_REASONING_RAW_PASSTHROUGH", "").strip().lower()
+    raw = os.getenv("LANGFUSE_REASONING_RAW_PASSTHROUGH", "").strip().lower()
     if not raw:
         return False
     return raw in ("1", "true", "yes", "on")
@@ -136,7 +136,7 @@ def _reasoning_raw_passthrough() -> bool:
 
 def _include_turn_context_spans() -> bool:
     """Whether to emit turn_context:* instruction spans."""
-    raw = os.getenv("OMX_LANGFUSE_INCLUDE_TURN_CONTEXT_SPANS", "").strip().lower()
+    raw = os.getenv("LANGFUSE_INCLUDE_TURN_CONTEXT_SPANS", "").strip().lower()
     if not raw:
         return True
     return raw in ("1", "true", "yes", "on")
@@ -183,17 +183,17 @@ def _load_env_defaults(cwd: str) -> None:
 
     Precedence:
     1) existing process environment (highest)
-    2) OMX_LANGFUSE_ENV_FILE (optional explicit path)
-    3) ~/.omx/.env
-    4) <cwd>/.omx/.env
+    2) LANGFUSE_ENV_FILE (optional explicit path)
+    3) ~/.langfuse-hook/.env
+    4) <cwd>/.langfuse-hook/.env
     """
-    override = _as_str(os.getenv("OMX_LANGFUSE_ENV_FILE")).strip()
+    override = _as_str(os.getenv("LANGFUSE_ENV_FILE")).strip()
     candidates: List[Path] = []
     if override:
         candidates.append(Path(override).expanduser())
-    candidates.append(Path.home() / ".omx" / ".env")
+    candidates.append(Path.home() / ".langfuse-hook" / ".env")
     if cwd:
-        candidates.append(Path(cwd) / ".omx" / ".env")
+        candidates.append(Path(cwd) / ".langfuse-hook" / ".env")
 
     seen: set[str] = set()
     for candidate in candidates:
@@ -235,7 +235,7 @@ def _normalize_event_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     return {
         "timestamp": _as_str(payload.get("timestamp")) or datetime.now(timezone.utc).isoformat(),
-        "source": _as_str(payload.get("source")) or "omx-hook-plugin",
+        "source": _as_str(payload.get("source")) or "langfuse-hook",
         "event": _as_str(payload.get("event")) or "turn-complete",
         "type": _as_str(payload.get("type")) or _as_str(payload.get("event")) or "turn-complete",
         "cwd": _as_str(payload.get("cwd")),
@@ -259,7 +259,7 @@ class HookState:
 
 
 def _state_path(cwd: str) -> Path:
-    return Path(cwd) / ".omx" / "hooks" / "langfuse_state.json"
+    return Path(cwd) / ".langfuse-hook" / "hooks" / "langfuse_state.json"
 
 
 def _load_state(cwd: str) -> HookState:
@@ -686,7 +686,7 @@ def _as_float(value: Any) -> Optional[float]:
 
 def _resolve_price_rates(model: Optional[str]) -> PriceRates:
     # 1) model map JSON (preferred)
-    raw_map = os.getenv("OMX_LANGFUSE_PRICE_MAP_JSON", "").strip()
+    raw_map = os.getenv("LANGFUSE_PRICE_MAP_JSON", "").strip()
     if raw_map and model:
         try:
             parsed = json.loads(raw_map)
@@ -704,10 +704,10 @@ def _resolve_price_rates(model: Optional[str]) -> PriceRates:
 
     # 2) global env fallback
     return PriceRates(
-        input_per_1m=_as_float(os.getenv("OMX_LANGFUSE_PRICE_INPUT_PER_1M")),
-        cached_input_per_1m=_as_float(os.getenv("OMX_LANGFUSE_PRICE_CACHED_INPUT_PER_1M")),
-        output_per_1m=_as_float(os.getenv("OMX_LANGFUSE_PRICE_OUTPUT_PER_1M")),
-        reasoning_output_per_1m=_as_float(os.getenv("OMX_LANGFUSE_PRICE_REASONING_OUTPUT_PER_1M")),
+        input_per_1m=_as_float(os.getenv("LANGFUSE_PRICE_INPUT_PER_1M")),
+        cached_input_per_1m=_as_float(os.getenv("LANGFUSE_PRICE_CACHED_INPUT_PER_1M")),
+        output_per_1m=_as_float(os.getenv("LANGFUSE_PRICE_OUTPUT_PER_1M")),
+        reasoning_output_per_1m=_as_float(os.getenv("LANGFUSE_PRICE_REASONING_OUTPUT_PER_1M")),
     )
 
 
@@ -887,7 +887,7 @@ def _build_turn_payload(event_data: Dict[str, Any], turn: TurnData, rollout_path
 
     return {
         "event": event_data.get("event") or "turn-complete",
-        "source": event_data.get("source") or "omx-hook-plugin",
+        "source": event_data.get("source") or "langfuse-hook",
         "timestamp": event_data.get("timestamp") or datetime.now(timezone.utc).isoformat(),
         "cwd": event_data.get("cwd"),
         "session_id": event_data.get("session_id"),
@@ -924,7 +924,7 @@ def _emit_rich_with_span_api(client: Any, data: Dict[str, Any], user_id: str) ->
     if not hasattr(client, "start_as_current_span"):
         return False
 
-    trace_name = f"OMX turn {data.get('turn_id') or 'unknown'}"
+    trace_name = f"Turn {data.get('turn_id') or 'unknown'}"
 
     metadata = _compact_dict(
         {
@@ -956,7 +956,7 @@ def _emit_rich_with_span_api(client: Any, data: Dict[str, Any], user_id: str) ->
             "developer_instructions_meta": data.get("developer_instructions_meta"),
             "user_instructions_meta": data.get("user_instructions_meta"),
             "reconstruction": "hook-only-rollout-parse",
-            "product": "oh-my-codex",
+            "product": "langfuse-hook",
             "session_id": data.get("session_id"),
             "user_id": user_id or None,
         }
@@ -976,7 +976,7 @@ def _emit_rich_with_span_api(client: Any, data: Dict[str, Any], user_id: str) ->
                             "name": trace_name,
                             "session_id": data.get("session_id"),
                             "user_id": user_id or None,
-                            "tags": ["oh-my-codex", "omx", "hook-only", "deep-observability"],
+                            "tags": ["langfuse-hook", "hook-only", "deep-observability"],
                             "metadata": metadata,
                         }
                     )
@@ -1056,7 +1056,7 @@ def _emit_rich_with_span_api(client: Any, data: Dict[str, Any], user_id: str) ->
                                 {
                                     "event": data.get("event"),
                                     "cost": data.get("cost"),
-                                    "product": "oh-my-codex",
+                                    "product": "langfuse-hook",
                                     "turn_context": data.get("turn_context"),
                                     "developer_instructions": data.get("developer_instructions"),
                                     "user_instructions": data.get("user_instructions"),
@@ -1198,7 +1198,7 @@ def _emit_basic_with_trace_api(client: Any, data: Dict[str, Any], user_id: str) 
     if not hasattr(client, "trace"):
         return False
 
-    trace_name = f"OMX turn {data.get('turn_id') or 'unknown'}"
+    trace_name = f"Turn {data.get('turn_id') or 'unknown'}"
     metadata = _compact_dict(
         {
             "source": data.get("source"),
@@ -1217,7 +1217,7 @@ def _emit_basic_with_trace_api(client: Any, data: Dict[str, Any], user_id: str) 
             "turn_context": data.get("turn_context"),
             "developer_instructions_meta": data.get("developer_instructions_meta"),
             "user_instructions_meta": data.get("user_instructions_meta"),
-            "product": "oh-my-codex",
+            "product": "langfuse-hook",
             "session_id": data.get("session_id"),
             "user_id": user_id or None,
             "reasoning_blocks": data.get("reasoning_blocks"),
@@ -1233,7 +1233,7 @@ def _emit_basic_with_trace_api(client: Any, data: Dict[str, Any], user_id: str) 
                 "input": {"role": "user", "content": data.get("input_text") or "\n\n".join(data.get("user_messages", []) or [])},
                 "output": {"role": "assistant", "content": data.get("output_text")},
                 "metadata": metadata,
-                "tags": ["oh-my-codex", "omx", "hook-only", "deep-observability"],
+                "tags": ["langfuse-hook", "hook-only", "deep-observability"],
             }
         )
     )
@@ -1274,7 +1274,7 @@ def _emit_basic_with_trace_api(client: Any, data: Dict[str, Any], user_id: str) 
 
 
 def _emit_lifecycle_event(client: Any, event_data: Dict[str, Any], user_id: str) -> bool:
-    name = f"OMX {event_data.get('event') or 'event'}"
+    name = f"{event_data.get('event') or 'event'}"
     metadata = _compact_dict(
         {
             "source": event_data.get("source"),
@@ -1286,7 +1286,7 @@ def _emit_lifecycle_event(client: Any, event_data: Dict[str, Any], user_id: str)
             "cwd": event_data.get("cwd"),
             "hostname": socket.gethostname(),
             "timestamp": event_data.get("timestamp"),
-            "product": "oh-my-codex",
+            "product": "langfuse-hook",
             "session_id": event_data.get("session_id"),
             "user_id": user_id or None,
         }
@@ -1302,7 +1302,7 @@ def _emit_lifecycle_event(client: Any, event_data: Dict[str, Any], user_id: str)
                     "input": "\n\n".join(event_data.get("input_messages", []) or []),
                     "output": event_data.get("output_message"),
                     "metadata": metadata,
-                    "tags": ["oh-my-codex", "omx", "hook-only", "lifecycle"],
+                    "tags": ["langfuse-hook", "hook-only", "lifecycle"],
                 }
             )
         )
@@ -1323,7 +1323,7 @@ def _emit_lifecycle_event(client: Any, event_data: Dict[str, Any], user_id: str)
                                 "name": name,
                                 "session_id": event_data.get("session_id"),
                                 "user_id": user_id or None,
-                                "tags": ["oh-my-codex", "omx", "hook-only", "lifecycle"],
+                                "tags": ["langfuse-hook", "hook-only", "lifecycle"],
                                 "metadata": metadata,
                             }
                         )
@@ -1343,7 +1343,7 @@ def main() -> int:
     _load_env_defaults(os.getcwd())
 
     # safety gate
-    if not _env_true("OMX_TRACE_TO_LANGFUSE"):
+    if not _env_true("LANGFUSE_TRACE_ENABLED"):
         return 0
 
     payload = _read_payload()

@@ -1,9 +1,4 @@
-node_modules/
-dist/
-*.tsbuildinfo
-.omc/state/
-.omc/prompts/
-.omc/logs/
-.omc/research/
-.omc/
-.omx/
+__pycache__/
+*.pyc
+.env
+langfuse_state.json
