@@ -31,7 +31,7 @@
 ## 사전 요구 사항
 
 - **oh-my-codex** -- 설치 및 실행 가능 상태 ([설치 가이드](https://github.com/Yeachan-Heo/oh-my-codex))
-- **Python 3.8+** -- `pip` 사용 가능 (`python3 -m pip --version`으로 확인)
+- **Python 3.8+** -- `pip` 사용 가능 (`python3 -m pip --version` 또는 `python -m pip --version`으로 확인)
 - **Langfuse 계정** -- [cloud.langfuse.com](https://cloud.langfuse.com) (무료 플랜 가능) 또는 셀프 호스팅 인스턴스
 
 ## 빠른 시작
@@ -200,7 +200,7 @@ LANGFUSE_BASE_URL=https://langfuse.your-company.com
 
 1. `~/.omx/hooks/langfuse_hook.py`에 훅 스크립트가 존재하는지 확인
 2. OMX 훅 플러그인이 스크립트를 호출하도록 설정되었는지 확인
-3. 수동 테스트: `echo '{}' | python3 ~/.omx/hooks/langfuse_hook.py`
+3. 수동 테스트: `echo '{}' | python3 ~/.omx/hooks/langfuse_hook.py` (Windows에서는 `python3` 대신 `python` 사용)
 
 ### 중복 트레이스
 

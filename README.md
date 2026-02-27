@@ -31,7 +31,7 @@ Automatic [Langfuse](https://langfuse.com) tracing for [oh-my-codex (OMX)](https
 ## Prerequisites
 
 - **oh-my-codex** -- installed and working ([install guide](https://github.com/Yeachan-Heo/oh-my-codex))
-- **Python 3.8+** -- with `pip` available (`python3 -m pip --version` to verify)
+- **Python 3.8+** -- with `pip` available (`python3 -m pip --version` or `python -m pip --version` to verify)
 - **Langfuse account** -- [cloud.langfuse.com](https://cloud.langfuse.com) (free tier available) or a self-hosted instance
 
 ## Quick Start
@@ -200,7 +200,7 @@ LANGFUSE_BASE_URL=https://langfuse.your-company.com
 
 1. Verify the hook script exists at `~/.omx/hooks/langfuse_hook.py`
 2. Check that the OMX hook plugin is configured to call the script
-3. Test manually: `echo '{}' | python3 ~/.omx/hooks/langfuse_hook.py`
+3. Test manually: `echo '{}' | python3 ~/.omx/hooks/langfuse_hook.py` (use `python` instead of `python3` on Windows)
 
 ### Duplicate traces
 

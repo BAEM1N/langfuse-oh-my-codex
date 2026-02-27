@@ -14,18 +14,18 @@ When a user asks to set up this project, follow these steps:
 
 ```bash
 # Python 3.8+
-python3 --version
+python3 --version   # or `python --version` on Windows
 
 # pip available
-python3 -m pip --version
+python3 -m pip --version   # or `python -m pip --version` on Windows
 
 # langfuse SDK
-python3 -c "import langfuse; print(langfuse.__version__)" 2>/dev/null || echo "Not installed"
+python3 -c "import langfuse; print(langfuse.__version__)" 2>/dev/null || python -c "import langfuse; print(langfuse.__version__)" 2>/dev/null || echo "Not installed"
 ```
 
 If langfuse is not installed:
 ```bash
-python3 -m pip install --upgrade langfuse
+python3 -m pip install --upgrade langfuse   # or `python -m pip install ...` on Windows
 ```
 
 ### Step 2: Interview User for Langfuse Credentials
@@ -76,10 +76,10 @@ ls -la ~/.omx/hooks/langfuse_hook.py
 ls -la ~/.omx/.env
 
 # Check langfuse import works
-python3 -c "import langfuse; print('OK')"
+python3 -c "import langfuse; print('OK')" || python -c "import langfuse; print('OK')"
 
 # Dry-run test (should exit silently)
-echo '{}' | python3 ~/.omx/hooks/langfuse_hook.py
+echo '{}' | python3 ~/.omx/hooks/langfuse_hook.py   # or `python` on Windows
 ```
 
 ### Step 6: Inform User
@@ -111,5 +111,5 @@ Priority (highest first):
 
 - **No traces**: Check `TRACE_TO_LANGFUSE=true` and API keys in `~/.omx/.env`
 - **Hook not firing**: Verify the hook script exists at `~/.omx/hooks/langfuse_hook.py`
-- **Import error**: Run `python3 -m pip install langfuse`
+- **Import error**: Run `python3 -m pip install langfuse` (or `python -m pip install langfuse` on Windows)
 - **Duplicate traces**: Delete `~/.omx/hooks/langfuse_state.json` for fresh start
